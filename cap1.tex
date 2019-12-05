@@ -1,0 +1,45 @@
+\chapter{Introdução}
+
+%%%% Sobre o que trata este trabalho?
+%%%% Por que este trabalho foi feito? (A importância de continuações como mecanismo de controle. Pi automato como um modelo simples para ensino de compiladores feito no ic/uff no qual continuacoes sao explicitas.) 
+%%%% Como foi feito?
+
+Esse trabalho trata da adição de continuações à um Framework semântico para ensino de compiladores chamado $\Pi$ Framework. Continuações apresentam um controle de fluxo não-local. 
+
+Continuações surgiram na linguagem scheme\ref{???} através da função \texttt{call-with-current-continuation}, ou \texttt{call/cc}. Ela apresenta importância prática e teórica, sendo possível utiliza-la para implementar \texttt{\ref{amb}}, corotinas\texttt{\ref{corotinas}}, continuações delimitadas\ref{???} e exceções\ref{???}, além de, no isomorfismo de Curry-Howard, seu tipo ser equivalente a lei de Pierce\ref{???}.
+
+O $\Pi$ Framework é um modelo criado por Christiano Braga\ref{???} para ensino da disciplina de compiladores. Este framework contém elementos básicos para descrever a semântica de reescrita de linguagens de programação, como estruturas de repetição, decisão, procedimentos e funções recursivas.
+
+Esse capitulo dará uma breve exposição dos recursos tratados ou utilizados para a produção desta monografia. O Capítulo \ref{???}
+
+%%%% nomes de cap ou secao devem começar com maiuscula. utilize sempre ref cruzadas
+
+
+definirá em maiores detalhes o estado atual da maquina abstrata utilizada para dar semântica a linguagens de programação. O capítulo 3 adicionará ao capítulo 2 as contribuições do autor a esta maquina. O capitulo 4 exemplificará como as novas primitivas podem ser utilizadas para descrever a semântica de construções como retorno de funções e corotinas. Finalmente, o capítulo 5 citará os trabalhos que influenciaram a presente monografia ou atacaram o mesmo problema de semântica formal.
+
+\section{Racket}
+Racket\footnote{https://racket-lang.org/}, inicialmente chamada de plt-scheme, é uma linguagem baseada em lisp criada para ser uma linguagem para desenvolver linguagens. Multi-paradigma, priorizando estruturas de dados imutáveis, com um sistema de meta-programação baseado em macros higiênicas. Com extensa facilidade para realizar pattern matching, Racket foi a linguagem escolhida para desenvolver esse trabalho. O principal procedimento desenvolvido pelo autor, a saber, a função de transição do sistema, faz uso extenso do pattern matching, permitindo que as regras de transição sejam codificadas sem maior esforço, de uma maneira declarativa.
+
+Ex:
+    Dada uma estrutura \texttt{add}, contendo dois membros númericos, sua avaliação dada através da regra
+    $$(\texttt{add a b)} \xrightarrow{} a+b  $$
+    Pode ser codificada como a função \texttt{evalExpression} dada por
+    
+    \begin{verbatim}
+    (define (evalExpression exp)
+    
+            (match exp
+            
+            [(add a b) (+ a b)]))
+    \end{verbatim}
+    
+\section{Pi Automato}
+
+\section{Continuações}
+
+\section{Call/cc}
+%faria sentido ter uma seção explicando sobre o racket
+\subsection{Call/cc em Racket}
+\subsubsection{Ret}
+\subsubsection{Call/cc}
+\subsubsection{Co-rotinas}

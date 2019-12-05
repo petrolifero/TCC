@@ -1,0 +1,148 @@
+%%% TEXTO representando codigo deve ser formatado em tt.
+%%% TEXTO representando elementos matematicos deve estar entre $$. Se for uma palavra, dentro de mathit.
+
+\chapter{$\Pi$ Autômato com continuações}
+Esse capítulo mostrará como as continuações são expressas no formalismo $\Pi$ Framework.
+A seção \ref{secao3.1} discorrerá qualitativamente sobre as construções $\Pi$ IR necessárias para implementar a semântica de continuações. A seção \ref{secao3.2} discorrerá sobre corotinas, que não exigem construções novas no $\Pi$ IR, porém se utilizam das construções descritas na seção \ref{secao3.1} para prover a sua semântica. Finalmente, a \ref{primeira-cont} irá apresentar as transições, no $\Pi$ Framework, das estruturas descritas na seção \ref{secao3.1}.
+
+\section{Primitivas $\Pi$ IR para continuações}\label{secao3.1}
+
+\subsection{\texttt{Cont}}
+
+Todo termo em $\Pi$ IR que é uma expressão (e toda avaliação de expressão do topo da pilha de controle no $\Pi$ autômato) possui uma continuação implícita, visto que, para terminar a execução, o $\Pi$ autômato precisa da pilha de valores vazia e toda expressão termina por colocar um valor no topo da pilha de valores. Dessa forma, são necessárias mais transições para completar a computação. Essas transições são a continuação implícita. 
+
+Com a possibilidade de capturar uma continuação (através do $\mathit{call/cc}$ explicado na seção \ref{call/cc}), surge a necessidade de incorporá-la como valor, visto que agora pode, por exemplo, ser atribuída a uma variável como uma expressão qualquer. Toda expressão é um valor primitivo, imediato, como um número ou um booleano, ou estruturas complexas, como adição de expressões ou \texttt{or} de expressões. Um valor primitivo, imediato, da origem a uma transição que o leva do topo da pilha de controle para o topo da pilha de valores. Uma expressão complexa exige sua desconstrução, avaliação de suas sub-expressões, e por fim a avaliação final de seu valor. Por exemplo, para avaliar $$2+(2+2)$$ sob um contexto arbitrário, que é uma expressão complexa, deve-se desconstruí-la em suas sub-expressões ($2$ e $(2+2)$, obter o valor de cada sub-expressão ($2$ e $4$), e por fim, avaliar a expressão final com o resultado $6$. Uma continuação, embora seja uma expressão, não se enquadra na categoria de expressões aritméticas nem booleanas. Exige para si portanto uma categoria nova. Nessa categoria nova, as continuações, ao serem avaliadas, não necessitam de analise de sub-expressões, portanto se assemelham em comportamento aos números e booleanos. Como tal, se estiverem no topo da pilha de controle, são apenas transferidas para o topo da pilha de valores, como indicado pela seção \ref{primeira-cont}.
+
+Todo valor primitivo possui operações associadas a este, como os números, que podem ser somados, subtraídos, multiplicados e divididos; Os valores booleanos, que podem ser negados, aplicados "ou", "e". Com continuações não é diferente. A operação particular da continuação é a invocação com uma única expressão. Essa expressão deve se tornar um valor, e o contexto de execução representado na continuação é restaurado, com este valor ocorrendo em substituição ao foco da continuação supracitada. Essa propriedade é exposta na segunda equação sobre continuações\ref{segunda-cont}.
+
+\subsection{\texttt{CallActualsf}}
+
+O \texttt{CallActualsf} representa uma avaliação estrita de uma função de aridade arbitrária. A avaliação estrita é exposta na primeira equação\ref{primeira-callf} associada a \texttt{CallActualsf}
+Toda função, ao contrario de um procedimento, necessita retornar um valor.
+A expressão que contém a chamada da função, portanto, precisa ser relembrada.
+Essa "lembrança" aparece na forma da continuação desta chamada. Essa "lembrança" é exposta na segunda equação\ref{segunda-callf} associada a \texttt{callActualsf}.
+
+\subsection{\texttt{Call/cc}\label{call/cc}}
+
+Embora continuações existam necessariamente na avaliação de uma expressão, se não puderem ser trazidas à avaliação de um programa explicitamente, só seriam utilizadas para controlar retorno de funções, como dito acima. Com o \texttt{$\mathit{call/cc}$}, a continuação associada a chamada do \texttt{$\mathit{call/cc}$} pode ser reificada (trazida explicitamente ao programa) e manipulada de forma geral por uma função. Essa propriedade é exposta na única equação associada a $\mathit{call/cc}$\ref{primeira-callcc}.
+
+\section{Codificando Corotinas}\label{secao3.2}
+
+Para um exemplo do uso de corotinas utilizando o $\Pi$ Framework para resolver o problema de consumidor-produtor, veja~\cite{piLibSemantic}.
+
+Uma corotina que não chama outras corotinas não se diferencia muito de uma subrotina. Sua semântica especifica é exibida quando da interação com outras
+corotinas. Não são necessárias, dado as transições para continuações e $\mathit{call/cc}$, quaisquer transições especiais para a definição de corotinas. Elas porém se caracterizam por dois padrões descritos a seguir.
+
+\subsection{Funções recebendo continuações}
+
+%%% ESPAÇO ANTES DO PARENTESIS
+
+%%% formatacao de variaveis
+
+%%% pi-ir 
+
+Toda corotina (em alto nível) é uma função (em baixo nível) que recebe uma continuação como argumento.\footnote{Atualmente no $\Pi$ IR são aceitas apenas corotinas que interagem em pares, por isso a restrição de um único argumento (no caso, dadas corotinas $\mathit{f1}$ e $\mathit{f2}$, o argumento de $\mathit{f1}$ representa a continuação de $\mathit{f2}$ e o argumento de $\mathit{f2}$ representa a continuação de $\mathit{f1}$). Para maior interação, trabalho posterior incluirá o tratamento de mais argumentos.} 
+Esse argumento representa o estado atual (ambiente e ponto do código em execução) da outra corotina, com a qual a primeira interage. Ao longo da execução de uma corotina, ela deve obedecer às seguintes condições\label{rules-corotines}:
+\begin{itemize}
+    \item quando for chamada por um código de fora da dupla de corotinas (se existem duas corotinas $\mathit{f1}$ e $\mathit{f2}$, e uma função main, que não é corotina, main será o dito "código de fora") deverá ser chamada com a abstração que representa a outra corotina (main chamaria $\mathit{f1}$, passando $\mathit{f2}$ como argumento no exemplo);
+    \item quando for chamar a outra corotina ($\mathit{f1}$ invocar $\mathit{f2}$, no exemplo), deve atualizar seu argumento com a continuação nova da outra corotina (se $\mathit{f1}$ possui o argumento $\mathit{k1}$, a invocação de $\mathit{f2}$ se dará como $Assign(Idt(k1), call/cc(k1)) )$.
+\end{itemize}
+
+Se uma função f obedecer as propriedades acima\ref{rules-corotines}, \texttt{f} poderá ser usada como corotina.
+
+\subsection{Explicação da segunda regra de corotina\ref{rules-corotines}}
+O que acontece nessa atribuição é uma manipulação sofisticada de continuações. Sendo \texttt{$\mathit{k1}$} uma continuação de $g$, $\mathit{call/cc}$ capturará a continuação atual de $f$, e a entregará a $\mathit{k1}$, efetivamente invocando $g$, do ponto que g estava da última vez que $f$ e $g$ interagiram, com a continuação atual de $f$. Quando $g$ retornar dessa interação, invocando o mesmo comando (\textit{mutatis mutandis}, pois o parâmetro de continuação de $g$ pode ter um nome diferente de $\mathit{k1}$), sua própria continuação será capturada pelo $\mathit{call/cc}$ e entregue a continuação atual de $f$. A continuação atual de $g$ será então atribuída a $\mathit{k1}$. Nesse contexto, $f$ terá interagido com $g$, continuará sua execução do ponto que retornou, e tem em seu parâmetro o ponto exato em que $g$ deixou de executar anteriormente.
+
+\section{Transições}
+
+%%% RELEMBRE A NOTACAO. RELEMBRE AS OUTRAS PRIMITIVAS NECESSÁRIAS AO 
+%%% ENTENDIMENTO DAS PRIMITIVAS PARA CONTINUACOES.
+%%% DECLARE AS VARIAVEIS.
+
+O estado do $\Pi$ autômato é representado, em notação da função $\delta$, tipicamente utilizada em teoria de autômatos, onde a linguagem é $(\Pi \mathit{IR})^*$ e o estado é formado pela Pilha de valores, Ambiente e Memória. A função de transição tem a seguinte forma geral: 
+$$
+\delta(C, V, E, S)
+$$ onde $C$ é a pilha de controle, $V$ é a pilha de valores, $E$ é o ambiente e $S$ é a memória.
+
+As variáveis $C$ e $V$ são pilhas, portanto, ou estão vazias $[]$ ou possuem um valor em seu topo e outra pilha como cauda
+
+$$X :: XS$$
+
+E e S são mapas finitos, portanto ou estão vazios $$\{\}$$ ou são a extensão de outro mapa finito por uma associação de chave e valor $$H[k\rightarrow{}v].$$
+
+Transições de estados são representadas como $$E1 \rightarrow{} E2$$ com $E1$ e $E2$ sendo o estado corrente e o próximo estado, respectivamente.
+
+%%% JOÃO FALANDO
+%%% As explicações aqui foram dadas na seção 3.1 inteira.
+%%% Eu deveria mover aquelas explicações para essa seção?
+%%% Ou repeti-las de outra maneira, sob algum outro foco?
+
+%%% Intercale as explicacoes com as equacoes.
+
+\subsection{\textbf{Continuações}}
+
+
+%%%% Normalize entre Inglês e Português.
+Como uma continuação (dada pelo construtor $Cont(Environment,ValueStack,ControlStack)$ com Environment, ValueStack e ControlStack definidos com os tipos acima mencionados na seção \ref{primeira-cont} é uma expressão, deve ser transportada, quando for o termo corrente (topo da pilha de controle), para a pilha de valores.
+%\begin{multline}
+%\delta(Cont(Env,Val,Con) :: C, V, E, S) \\
+%\rightarrow{} \\
+%\delta(C,Cont(Env,Val,Con)::V, E, S)         \\
+%\end{multline}
+
+$$
+\delta(Cont(Env,Val,Con) :: C, V, E, S) 
+\rightarrow{}
+\delta(C,Cont(Env,Val,Con)::V, E, S)     
+$$\label{primeira-cont}
+
+Como uma continuação representa o contexto de uma expressão, sua invocação supre esse contexto (essencialmente eliminando o contexto atual) com o valor resultante da avaliação da expressão que lhe foi passada por parâmetro.
+
+$$
+\delta(\#CALLF :: C, Actual :: Cont(Env,Val,Con) :: V, E, S)
+\rightarrow{}
+\delta(Con,Actual::Val, Env, S)
+$$\label{segunda-cont}
+
+
+\subsection{\textbf{CallActualsf}}
+Uma chamada de função é uma expressão resultante da avaliação de um corpo parametrizável de comandos terminados (logicamente, não fisicamente) com um retorno. Quando esse retorno ocorre, é necessário que a execução substitua, no contexto da chamada original da função, o valor da expressão que serviu de parâmetro para o retorno. Esse contexto é então representado pela continuação guardada na pilha de valores. O desdobramento do CallActualsf segue o padrão bastante presente no $\Pi$ Framework de avaliar os argumentos de forma estrita, da esquerda para a direita.
+
+$$
+\delta(CallActualsf(Id,Actuals)::C, V,E,S)
+\rightarrow{}
+\delta(Id::Actuals::\#CALLF::C, Cont(E,V,C)::V, E,S)
+$$\label{primeira-callf}
+
+Uma vez a indução na avaliação do corpo da função e dos argumentos realizada, é necessário tornar a sua execução um "comando", e isto é feito criando-se um bloco contendo o corpo da função como comando, e os \textit{bindings} dos parâmetros formais aos atuais como variáveis locais.
+
+$$
+\delta(\#CALLF :: C, Actuals ... :: AbsFormals(Formals,Block) :: V, E,S)
+\rightarrow{}
+\delta(BlkCommandDec(casa(Formals,Actuals),Block)::C,V,E,S)
+$$\label{segunda-callf}
+$$casa(Par(a),e) = Bind(a,Ref(e))$$
+$$casa(For(a,b),e1::r) = Dec(Bind(a,Ref(e1)),casa(b,r))$$
+onde $\mathit{casa}$ fornece os bindings 
+
+
+%%% Normalize ingles e portugues
+%%% formate o texto dos construtores
+dos parâmetros formais com os valores passados na chamada da função, onde Par representa um parâmetro formal da função, For sequencia parâmetros formais, Dec sequencia declarações, Ref obtém uma localização limpa para associa-la, em memória, a uma expressão, e Bind associa, no ambiente, um identificador a uma localização. Todos esses construtores, bem como sua semântica, são explicados na seção \ref{declarações}
+
+%%% João falando
+%%% se essa estrutura esta correta, agora devo descrever o capitulo 2, para preencher essa referência, e expor o pi automato, nos mesmos moldes de qualidade desse capitulo, certo?
+
+%%% O QUE É 'casa'?
+
+
+\subsection{\textbf{Call/cc}}
+
+Como toda expressão, Call/cc possui uma continuação. Ele portanto captura a sua própria continuação, e a utiliza como argumento do seu próprio argumento. Deve ficar claro que a continuação de Call/cc não é eliminada quando ocorre a chamada do seu argumento, portanto se o seu argumento ignora a continuação e só retorna 3, por exemplo, o efeito gerado é o mesmo que substituir o Call/cc por 3 no contexto do $\Pi$ automata
+
+$$
+\delta(Call/cc(Func) :: C, V, E, S)
+\rightarrow{}
+\delta(Callf(Func, Cont(E,V,C)) :: C,V, E, S)
+$$\label{primeira-callcc}
+
