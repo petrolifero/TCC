@@ -4,19 +4,19 @@
 %%%% Por que este trabalho foi feito? (A importância de continuações como mecanismo de controle. Pi automato como um modelo simples para ensino de compiladores feito no ic/uff no qual continuacoes sao explicitas.) 
 %%%% Como foi feito?
 
-Esse trabalho trata da adição de continuações à um Framework semântico para ensino de compiladores chamado $\Pi$ Framework. Continuações apresentam um controle de fluxo não-local. 
+Esse trabalho trata da adição de continuações à um Framework semântico para ensino de compiladores chamado $\Pi$ Framework. Continuações apresentam um controle de fluxo não-local.
 
-Continuações surgiram na linguagem scheme através da função call-with-current-continuation, ou \texttt{call/cc}. Ela apresenta importância prática e teórica, sendo possível utiliza-la para implementar \texttt{amb}, corotinas, continuações delimitadas e exceções, além de, no isomorfismo de Curry-Howard, sua adição (e portanto a adição de seu tipo) permitir expressar teoremas clássicos em um sistema anteriormente intuicionista.
+A captura de continuações se da através da função call-with-current-continuation, ou \texttt{call/cc}. Ela apresenta importância prática e teórica, sendo possível utiliza-la para implementar \texttt{amb}, corotinas, continuações delimitadas e exceções.
 
-O $\Pi$ Framework é um modelo criado por Christiano Braga para ensino da disciplina de compiladores. Este framework contém elementos básicos para descrever a semântica de reescrita de linguagens de programação, como estruturas de repetição, decisão, procedimentos e funções recursivas.
+O $\Pi$ Framework é um modelo criado por Christiano Braga para ensino da disciplina de compiladores. Este Framework contém elementos básicos para descrever a semântica de reescrita de linguagens de programação, como estruturas de repetição, decisão, procedimentos e funções recursivas.
 
-Esse capitulo dará uma breve exposição dos recursos tratados ou utilizados para a produção desta monografia. O Capítulo \ref{cap2} definirá em maiores detalhes o estado atual da maquina abstrata utilizada para dar semântica a linguagens de programação. O capítulo \ref{cap3} adicionará ao capítulo \ref{cap2} as contribuições do autor a esta maquina. O capitulo 4 exemplificará como as novas primitivas podem ser utilizadas para descrever a semântica de construções como retorno de funções e corotinas. O capítulo 5 citará os trabalhos que influenciaram a presente monografia ou atacaram o mesmo problema de semântica formal. Finalmente, ocorrerá a conclusão da presente monografia.
+Esse capitulo dará uma breve exposição dos recursos tratados ou utilizados para a produção desta monografia. O Capítulo \ref{cap2} definirá em maiores detalhes o estado atual da maquina abstrata utilizada para dar semântica a linguagens de programação. O capítulo \ref{cap3} adicionará ao capítulo \ref{cap2} as contribuições do autor a esta maquina. O capitulo \ref{cap4} exemplificará como as novas primitivas podem ser utilizadas para descrever a semântica de construções como retorno de funções e corotinas. O capítulo \ref{cap5} citará os trabalhos que influenciaram a presente monografia ou atacaram o mesmo problema de semântica formal. Finalmente, ocorrerá a conclusão\ref{cap6} da presente monografia.
 
 \section{Racket}
 Racket\footnote{https://racket-lang.org/}, inicialmente chamada de plt-scheme, é uma linguagem baseada em lisp criada para ser uma linguagem para desenvolver linguagens. Multi-paradigma, priorizando estruturas de dados imutáveis, com um sistema de meta-programação baseado em macros higiênicas. Com extensa facilidade para realizar pattern matching, Racket foi a linguagem escolhida para desenvolver esse trabalho. O principal procedimento desenvolvido pelo autor, a saber, a função de transição do sistema, faz uso extenso do pattern matching, permitindo que as regras de transição sejam codificadas sem maior esforço, de uma maneira declarativa.
 
 Ex:
-    Dada uma estrutura \texttt{add}, contendo dois membros númericos, sua avaliação dada através da regra
+    Dada uma estrutura \texttt{add}, contendo dois membros numéricos, sua avaliação dada através da regra
     $$(\texttt{add a b)} \xrightarrow{} a+b  $$
     Pode ser codificada como a função \texttt{evalExpression} dada por
     
@@ -29,11 +29,24 @@ Ex:
     \end{verbatim}
     
 \section{$\Pi$ Autômato}
-O $\Pi$ Autômato é uma maquina utilizada dentro do $\Pi$ framework para descrever a semântica de linguagens de programação através do grafo gerado pelas suas transições. Contém em sua estrutura os bindings gerados pela execução de um programa, além dos valores intermediários necessários a computação corrente (caso se esteja computando $1+(1+x)$, em sua estrutura existe o valor correspondente a x e, quando da realização da última soma, o valor armazenado de $1+x$).
+O $\Pi$ Autômato é uma maquina utilizada dentro do $\Pi$ Framework para descrever a semântica de linguagens de programação através do grafo gerado pelas suas transições. Contém em sua estrutura os bindings gerados pela execução de um programa, além dos valores intermediários necessários a computação corrente (caso se esteja computando $1+(1+x)$, em sua estrutura existe o valor correspondente a x e, quando da realização da última soma, o valor armazenado de $1+x$).
 \section{Continuações}
-Uma continuação é uma representação do futuro de uma computação. Normalmente representada como uma função de um único parâmetro. Na expressão $1+(1+x)$, quando se esta avaliando o valor de $(1+x)$, a continuação se parece com $\lambda(x) 1+x$. Normalmente as continuações são, em uma dada linguagem, implícitas, dadas pela sequência de execuções do programa. As continuações podem ser dadas explicitamente caso o programa esteja escrito em continuation passing style (CPS). 
+Uma continuação é uma representação do futuro de uma computação. Normalmente representada como uma função de um único parâmetro. Na expressão $1+(1+x)$, quando se esta avaliando o valor de $(1+x)$, a continuação se parece com $\lambda(x) 1+x$. Normalmente as continuações são, em uma dada linguagem, implícitas, dadas pela sequência de execuções do programa. As continuações podem ser dadas explicitamente caso o programa esteja escrito em \texttt{continuation passing style} (CPS). Caso o CPS seja seguido rigorosamente, não há aumento em poder expressivo ou em capacidade de abstração gerada pelas continuações. Se as continuações puderem ser capturadas e utilizadas de uma maneira não prescrita pelo CPS, é possível expressar diversos construtos de alto nível de maneira intuitiva e clara.
+
 \section{Call/cc}
+
+O call/cc é uma função que permite capturar a continuação corrente, e utiliza-la como argumento de outra função, a saber, seu argumento. Isso permite por exemplo salvar a continuação corrente para reinstala-la no futuro. O efeito de uma reinstalação de continuação com um valor $v$ é o retorno do estado da computação para o ponto anterior a redução da chamada ao call/cc, substituir a chamada de call/cc pelo valor $v$, e reprocessar a computação a partir desse estado, preservando as alterações feitas na memória.
+
 \subsection{Call/cc em Racket}
+
+Racket oferece call/cc como uma função primitiva. A execução do call/cc segue a convenção de chamadas de função em lisp i.e. 
+\begin{lstlisting}
+(functionName args ...)
+\end{lstlisting}\cite{callccRacket}
+
+O Call/cc no racket não captura a continuação completa, mas sim a continuação até o \texttt{prompt} mais próximo. Como Racket preserva as outras propriedades do call/cc (evocação da continuação capturada preservar memória modificada e restauração imediata da continuação capturada), e como é possível manter a semântica esperada se nos restringirmos a sub-linguagem puramente funcional do Racket, seu comportamento foi utilizado como modelo para a implementação do call/cc no $\Pi$ Autômato.
 \subsubsection{Ret}
-\subsubsection{Call/cc}
+Ret é uma estrutura que implementa a semântica do comando \texttt{return}, ou seja, encerra uma chamada de função, utilizando o valor da expressão passada como argumento em substituição a própria chamada. Portanto, se um comando evoca \texttt{f} e na execução de \texttt{f}, \texttt{Ret} é avaliado, então o valor da expressão passada para \texttt{Ret} é substituido no comando que evocou \texttt{f}.
+
 \subsubsection{Co-rotinas}
+Quando uma sub-rotina é evocada, o controle do fluxo é passado para o corpo da sub-rotina; Este corpo é executado e no fim dessa execução, o fluxo é retornado ao código que invocou a sub-rotina. Se uma sub-rotina for invocada novamente, ela executará todo o seu corpo novamente. As co-rotinas, por outro lado, permitem retornar o fluxo de controle ao código chamador e manter uma "memória" do ponto em seu proprio fluxo em que pararam. Quando reinvocadas portanto, podem continuar o fluxo do ponto em que retornaram da última vez,e  não necessariamente do começo. Essa propriedade é útil para implementar execução cooperativa preemptiva de duas funções.

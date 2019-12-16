@@ -3,8 +3,22 @@ Esse capítulo tratará do $\Pi$ Autômato antes da introdução das continuaç�
 \section{Definição}
 O $\Pi$ Autômato é uma máquina abstrata, com seu estado contendo duas pilhas (a saber, pilha de valores, que armazena principalmente valores intermediários de uma computação; e pilha de controle, que armazena o resto dos comandos e/ou declarações a partir do ponto atual de execução) e dois mapas finitos (a saber, o "ambiente", que controla os bindings de constantes e a associação entre identificadores e índices (chamados "localizações") do segundo hash, chamado de "memória", que mapeia as localizações para números, booleanos e abstrações. Este autômato admite transições de estados através de regras funcionais, dirigidas por sintaxe.
 \subsection{PI IR}
-
+O $\Pi$ Ir é um conjunto de estruturas utilizadas para descrever elementos semânticos. Essas estruturas se dividem em expressões, comandos e declarações, dependendo do seu efeito quando computados. Expressões, ao serem computadas, produzem um valor. Esse valor pode ser um número ou um valor booleano. Nenhuma mudança na memória ou nos \texttt{bindings} é permitida. Comandos, ao serem computados, podem produzir mudanças na memória, porém não nos \texttt{bindings}. Comandos não produzem valores. As declarações produzem mudanças nos \texttt{bindings} e não produzem valores.
 \subsubsection{Expressões}
+As expressões são divididas em expressões aritméticas e expressões booleanas. Expressões aritméticas são aquelas que, ao serem computadas, produzem um número. Expressões booleanas são aquelas que, ao serem computadas, produzem um valor booleano (\texttt{true} ou \texttt{false}). As expressões são as seguintes : 
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+         Nome da expressão & Aridade & Categoria\\\hline\hline
+         add & 2 & Aritmetica\\\hline
+         sub & 2 & Aritmetica\\
+    \hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:my_label}
+\end{table}
 \subsubsection{Comandos}
 \subsubsection{Declarações}
 
