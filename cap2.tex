@@ -31,35 +31,18 @@ As expressões são divididas em expressões aritméticas e expressões booleana
     \caption{Conjunto de expressões descritas nesse trabalho}
     \label{tab:expressoes}
 \end{table}
-\begin{table}[]
-    \centering
-    \begin{tabular}{|c|c|c|}
-    \hline
-         Nome da expressão & Aridade & Categoria\\\hline\hline
-         add & 2 & Aritmética\\\hline
-         sub & 2 & Aritmética\\\hline
-         mul & 2 & Aritmética\\\hline
-         div & 2 & Aritmética\\\hline
-         num & 1 & Aritmética\\\hline
-         bool & 1 & Booleana\\\hline
-         or & 2 & Booleana\\\hline
-         and & 2 & Booleana\\\hline
-         ge & 2 & Booleana\\\hline
-         gt & 2 & Booleana\\\hline
-         lt & 2 & Booleana\\\hline
-         neg & 1 & Booleana\\\hline
-         eq & 2 & Booleana\\\hline
-         le & 2 & Booleana\\\hline
-    \hline
-    \end{tabular}
-    \caption{Significado intuitivo das expressões}
-    \label{tab:significadoExpressoes}
-\end{table}
-TRANSIÇÕES NO PI-AUTOMATO
+
+Cada expressão possui sua semântica dada por um conjunto de transições entre estados do $\Pi$ Automato. As transições são detalhadas em \cite{Transicoes}, embora sua maioria possa ser resumida em 3 passos : 
+\begin{enumerate}
+    \item exploda a estrutura em seus constituintes
+    \item avalie cada constituinte recursivamente, da esquerda para a direita
+    \item reduza os valores finais dos constituintes gerados acima em um valor final
+\end{enumerate}
+Reitero que, além da geração do valor no topo da pilha de valores, nenhuma outra mudança no estado do $\Pi$ Automato é gerada. 
 \subsubsection{Comandos}
 \subsubsection{Declarações}
 
-\subsection{Exemplos de PI IR}
+\subsection{Exemplos de $\Pi$ IR}
 \subsubsection{Expressões}
 \subsubsection{Comandos}
 \subsubsection{Declarações}\label{declarações}
